@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Template</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+  </head>
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"
+  ></script>
+
+  <script>
+    console.log(window.location.pathname);
+    const [scene_path, frame_path] = window.location.pathname
+      .split("/path/scene/")
+      .pop()
+      .split("?0")[0]
+      .split("/");
+    let frame_data = {};
+
+    const fetch_frame_info = async () => {
+      const path = scene_path;
+      const frame = frame_path;
+      const response = await fetch(`/path/scene/${path}/${frame}/info`);
+      const data = await response.json();
+      this.frame_data = data;
+
+      console.log(data);
+
+      if (data.path_prv) {
+        document.getElementById("btn_prev").style.visibility = "visible";
+      }
+      if (data.path_next) {
+        document.getElementById("btn_next").style.visibility = "visible";
+      }
+
+      if (data.property_status["depth.png"]) {
+        update_image("img_depth", "depth.png");
+      }
+      if (data.property_status["disparity.png"]) {
+        update_image("img_disparity", "disparity.png");
+      }
+      if (data.property_status["lidar_plot.png"]) {
+        update_image("img_plot", "lidar_plot.png");
+      }
+      if (data.property_status["left_rectified.png"]) {
+        update_image("img_left_rect", "left_rectified.png");
+        update_image("img_right_rect", "right_rectified.png");
+      }
+      if (data.property_status["left_tonemapped.png"]) {
+        update_image("img_left", "left_tonemapped.png");
+        update_image("img_right", "right_tonemapped.png");
+      }
+    };
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("scene_title").innerText = atob(scene_path);
+      fetch_frame_info();
+    });
+
+    const update_image = (img_id, img_property) => {
+      const card = document.getElementById(img_id);
+      const img = card.getElementsByClassName("card-img-top")[0];
+      const path = `/path/scene/${scene_path}/${frame_path}/png/${img_property}`;
+      img.src = path;
+      img.style.height = "300px";
+      img.style.visibility = "visible";
+    };
+
+    const get_next_path = () => {
+      return this.frame_data.path_next;
+    };
+
+    const get_prev_path = () => {
+      return this.frame_data.path_prv;
+    };
+  </script>
+  <body>
+    <div class="hstack">
+      <button
+        class="btn btn-secondary"
+        onclick="window.location.href = `/path/scene/${scene_path}/main`"
+      >
+        Home
+      </button>
+      <button
+        class="btn btn-primary"
+        id="btn_prev"
+        style="visibility: hidden"
+        onclick="window.location.href = `/path/scene/${scene_path}/${btoa(
+          get_prev_path()
+        )}`"
+      >
+        Prev
+      </button>
+      <h1 id="scene_title">Frame Info</h1>
+      <button
+        class="btn btn-primary"
+        id="btn_next"
+        style="visibility: hidden"
+        onclick="window.location.href = `/path/scene/${scene_path}/${btoa(
+          get_next_path()
+        )}`"
+      >
+        Next
+      </button>
+    </div>
+
+    <div class="vstack" id="dv_viz_list">
+      <div class="hstack">
+        <div class="card" style="width: 400px" id="img_left">
+          <img
+            class="card-img-top"
+            alt="Image"
+            style="width: 400px; height: 0px; visibility: hidden"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Left</h5>
+          </div>
+        </div>
+        <div class="card" style="width: 400px" id="img_right">
+          <img
+            class="card-img-top"
+            alt="Image"
+            style="width: 400px; height: 0px; visibility: hidden"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Right</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="hstack">
+        <div class="card" style="width: 400px" id="img_left_rect">
+          <img
+            class="card-img-top"
+            alt="Image"
+            style="width: 400px; height: 0px; visibility: hidden"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Left</h5>
+          </div>
+        </div>
+        <div class="card" style="width: 400px" id="img_right_rect">
+          <img
+            class="card-img-top"
+            alt="Image"
+            style="width: 400px; height: 0px; visibility: hidden"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Right</h5>
+          </div>
+        </div>
+      </div>
+      <div class="hstack">
+        <div class="card" style="width: 400px" id="img_disparity">
+          <img
+            class="card-img-top"
+            alt="Image"
+            style="width: 400px; height: 0px; visibility: hidden"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Disparity</h5>
+          </div>
+        </div>
+        <div class="card" style="width: 400px" id="img_depth">
+          <img
+            class="card-img-top"
+            alt="Image"
+            style="width: 400px; height: 0px; visibility: hidden"
+          />
+          <div class="card-body">
+            <h5 class="card-title">Depth</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="width: 1000px" id="img_plot">
+        <img
+          class="card-img-top"
+          alt="Image"
+          style="width: 1000px; height: 0px; visibility: hidden"
+        />
+        <div class="card-body">
+          <h5 class="card-title">Plot</h5>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
